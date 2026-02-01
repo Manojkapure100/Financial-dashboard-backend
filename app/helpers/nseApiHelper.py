@@ -5,7 +5,10 @@ from app.core.dbModels import Stock
 from app.core.logger import logger
 from nselib import capital_market
 
-class ApiHelper:
+class NseApi:
+    def getStockInfo(self, session: Session, stock: Stock):
+        logger.info(f"fetching info of {stock.FullName}")
+        
     def getAllStockData(self, session: Session):
         stocks = session.query(Stock.Symbol, Stock.FullName, Stock.Info).all()
         if stocks:

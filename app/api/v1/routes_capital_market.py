@@ -9,20 +9,23 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.dbModels import Stock
-from app.core.apiHelper import ApiHelper
+from app.helpers.nseApiHelper import NseApi
+from app.helpers.indiaApiHelper import IndiaApi
+from app.core.logger import logger
 
 router = APIRouter(prefix="/api/v1/capitalmarket", tags=["capitalmarket"])
-apiHelper = ApiHelper()
+nseApiHelper = NseApi()
+indiaApiHelper = IndiaApi()
 
 @router.get("/")
 async def get_capitalmarket_status():
     """Get capitalmarket status"""
     return {"status": "ok"}
 
-@router.get("/all")
+@router.get("/company")
 async def func(session: Session = Depends(get_db)):
     try:
-        stocks = apiHelper.getAllStockData(session)
+        stocks = nseApiHelper.getAllStockData(session)
         return {
             "status": "success",
             "data": stocks
@@ -33,6 +36,30 @@ async def func(session: Session = Depends(get_db)):
             "reason": ex
         }
     
-@router.get("/company/{companyName}")
-async def test(companyName: str, session: Session = Depends(get_db)):
-    return session.query(Stock).all()
+@router.get("/company/{companySymbol}")
+async def func(companySymbol: str, session: Session = Depends(get_db)):
+    stock: Stock | None = (
+        session.query(Stock)
+        .filter(Stock.Symbol == companySymbol)
+        .first()
+    )
+
+    if not stock:
+        return {
+            "status": "Success",
+            "reason": "No data found, please check your request"
+        }
+
+    if stock.Info:
+        return {
+            "status": "Success",
+            "data": stock
+        }
+
+    logger.info(f"Info of {companySymbol} is not available")
+    new_stock = indiaApiHelper.getStockInfo(session, stock)
+
+    return {
+        "status": "Success" if new_stock else "Failed",
+        "data": new_stock or []
+    }
