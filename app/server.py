@@ -4,13 +4,21 @@ Main application entry point
 
 from fastapi import FastAPI
 from app.api.v1 import routes_backtest, routes_screener, routes_market, routes_capital_market
-
 from fastapi import Depends
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.dbModels import Stock
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Financial Dashboard Backend")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:4200"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Include routers
 app.include_router(routes_backtest.router)
