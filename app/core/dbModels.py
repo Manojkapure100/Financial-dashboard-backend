@@ -10,6 +10,7 @@ class Stock(Base):
     Info = Column(JSON, nullable=True)
     DateCreated = Column(DateTime, nullable=True)
     TmStamp = Column(DateTime, nullable=True)
+    Token = Column(Integer, nullable=True)
     
 class ApiUsageLimit(Base):
     __tablename__ = "ApiUsageLimit"
@@ -21,5 +22,16 @@ class ApiUsageLimit(Base):
     MaxLimit = Column(Integer, nullable=False)
     ResetInMonth = Column(Integer, nullable=False)
     ApiKey = Column(String(100), nullable=False)
+    SecreteKey = Column(String(100), nullable=True)
     DateCreated = Column(DateTime, nullable=True)
     TmStamp = Column(DateTime, nullable=True)
+    
+class Instrument(Base):
+    __tablename__ = "Instrument"
+    
+    Id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    Token = Column(String(20), nullable=True)
+    Symbol = Column(String(20), nullable=False)
+    Name = Column(String(100), nullable=False)
+    InstrumentType = Column(String(10), nullable=True)
+    ExchangeSegment = Column(String(10), nullable=True)

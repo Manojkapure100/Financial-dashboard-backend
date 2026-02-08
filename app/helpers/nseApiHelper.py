@@ -9,6 +9,11 @@ class NseApi:
     def getStockInfo(self, session: Session, stock: Stock):
         logger.info(f"fetching info of {stock.FullName}")
         
+    def getAllStockDataFromAPI(self):
+        stocks: DataFrame = capital_market.equity_list()
+        stockRecords = stocks.to_dict(orient="records")
+        return stockRecords
+        
     def getAllStockData(self, session: Session):
         stocks = session.query(Stock.Symbol, Stock.FullName, Stock.Info).all()
         if stocks:

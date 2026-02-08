@@ -25,7 +25,8 @@ async def get_capitalmarket_status():
 @router.get("/company")
 async def func(session: Session = Depends(get_db)):
     try:
-        stocks = nseApiHelper.getAllStockData(session)
+        # stocks = nseApiHelper.getAllStockData(session)
+        stocks = nseApiHelper.getAllStockDataFromAPI()
         return {
             "status": "success",
             "data": stocks

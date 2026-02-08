@@ -5,9 +5,10 @@ from app.core.logger import logger
 from app.core.database import get_db
 from sqlalchemy.orm import Session
 from fastapi import Depends
+from app.helpers.helpers import externalAPI
 
 class IndiaApi:
-    _apiName: str = 'indianAPI'
+    _apiName: str = externalAPI.IndiaAPI
     _apiDetail: ApiUsageLimit = ApiUsageLimit()
     
     def getApiKey(self, session: Session):
