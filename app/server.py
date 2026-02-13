@@ -16,8 +16,10 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:4200",
+        "http://localhost:4200/",
         "https://manojkapure100.github.io",
-        "https://manojkapure100.github.io/Financial-dashboard"
+        "https://manojkapure100.github.io/",
+        "https://manojkapure100.github.io/Financial-dashboard",
         "https://manojkapure100.github.io/Financial-dashboard/"
     ],
     allow_credentials=True,
