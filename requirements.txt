@@ -14,3 +14,4 @@ pymysql==1.1.2
 smartapi-python==1.5.5
 pyotp==2.9.0
 websocket==0.2.1
+logzero>=1.7.0

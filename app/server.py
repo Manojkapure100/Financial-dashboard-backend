@@ -14,7 +14,12 @@ app = FastAPI(title="Financial Dashboard Backend")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200"],
+    allow_origins=[
+        "http://localhost:4200",
+        "https://manojkapure100.github.io",
+        "https://manojkapure100.github.io/Financial-dashboard"
+        "https://manojkapure100.github.io/Financial-dashboard/"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
