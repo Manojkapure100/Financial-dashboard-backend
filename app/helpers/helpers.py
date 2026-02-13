@@ -8,6 +8,9 @@ from app.core.dbModels import ApiUsageLimit
 from enum import Enum
 
 class BaseAPI:
+    apiName: str = ''
+    apiDetail: ApiUsageLimit = ApiUsageLimit() 
+    
     def updateCurrentUsage(self, session: Session):
         result: ApiUsageLimit = session.query(ApiUsageLimit).filter(
                 ApiUsageLimit.ApiName == self.apiName

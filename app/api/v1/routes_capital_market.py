@@ -14,8 +14,6 @@ from app.helpers.indiaApiHelper import IndiaApi
 from app.core.logger import logger
 
 router = APIRouter(prefix="/api/v1/capitalmarket", tags=["capitalmarket"])
-nseApiHelper = NseApi()
-indiaApiHelper = IndiaApi()
 
 @router.get("/")
 async def get_capitalmarket_status():
@@ -25,6 +23,7 @@ async def get_capitalmarket_status():
 @router.get("/company")
 async def func(session: Session = Depends(get_db)):
     try:
+        nseApiHelper = NseApi()
         # stocks = nseApiHelper.getAllStockData(session)
         stocks = nseApiHelper.getAllStockDataFromAPI()
         return {
@@ -39,6 +38,7 @@ async def func(session: Session = Depends(get_db)):
     
 @router.get("/company/{companySymbol}")
 async def func(companySymbol: str, session: Session = Depends(get_db)):
+    indiaApiHelper = IndiaApi(session)
     stock: Stock | None = (
         session.query(Stock)
         .filter(Stock.Symbol == companySymbol)

@@ -11,10 +11,8 @@ import os
 load_dotenv()
 
 class AngleOneAPI(BaseAPI):
-    
     def __init__(self, session: Session):
-        self.apiName: str = externalAPI.MarketFeedAPI
-        self.apiDetail: ApiUsageLimit = ApiUsageLimit()
+        self.apiName: str = externalAPI.MarketFeedAPI.value
         self.client_code = os.getenv("CLIENT_CODE")
         self.password = os.getenv("PASSWORD")
         self.totp_token = os.getenv("TOTP_TOKEN")
