@@ -10,8 +10,14 @@ password = os.environ["DATABASE_PASSWORD"]
 host = os.environ["DATABASE_HOST"]
 port = os.environ["DATABASE_PORT"]
 databseName = os.environ["DATABASE_NAME"]
+env = os.environ["ENV"]
 
-DATABASE_URL = f"mysql+pymysql://{username}:{password}@{host}:{port}/{databseName}"
+DATABASE_URL = ''
+if env == 'PROD':
+    ssl_ca='./isrgrootx1.pem'
+    DATABASE_URL = f"mysql+pymysql://{username}:{password}@{host}:{port}/{databseName}?ssl_ca={ssl_ca}"
+else:
+    DATABASE_URL = f"mysql+pymysql://{username}:{password}@{host}:{port}/{databseName}"
 
 engine = create_engine(
     DATABASE_URL,

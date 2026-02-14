@@ -45,7 +45,7 @@ async def func(companySymbol: str, session: Session = Depends(get_db)):
         .first()
     )
 
-    if not stock:
+    if not stock.Id:
         return {
             "status": "Success",
             "reason": "No data found, please check your request"
@@ -61,6 +61,6 @@ async def func(companySymbol: str, session: Session = Depends(get_db)):
     new_stock = indiaApiHelper.getStockInfo(session, stock)
 
     return {
-        "status": "Success" if new_stock else "Failed",
+        "status": "Success" if new_stock.Id else "Failed",
         "data": new_stock or []
     }

@@ -3,6 +3,7 @@ Main application entry point
 """
 
 from fastapi import FastAPI, Request
+from sqlalchemy import text
 from app.api.v1 import routes_market, routes_capital_market
 from fastapi import Depends
 from sqlalchemy.orm import Session
@@ -37,8 +38,13 @@ app.include_router(routes_capital_market.router)
 
 
 @app.get("/")
-async def root():
-    return {"message": "Welcome to Financial Dashboard API"}
+async def root(session: Session = Depends(get_db)):
+    try:
+        result = session.execute(text('select 1'))
+        working = result.fetchone()[0]
+        return {"message": f"Welcome to Financial Dashboard API, database {'not ' if not working else ''}working"}
+    except Exception as ex:
+        return {"message": f"Welcome to Financial Dashboard API, database not working"}
 
 @app.get("/test")
 async def test(session: Session = Depends(get_db)):

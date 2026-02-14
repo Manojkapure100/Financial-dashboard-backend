@@ -1,5 +1,5 @@
 import requests
-from app.core.dbModels import ApiUsageLimit, Instrument
+from app.core.dbModels import ApiUsageLimit, Instrument, Stock
 from app.core.logger import logger
 from sqlalchemy.orm import Session
 from SmartApi.smartConnect import SmartConnect
@@ -74,9 +74,8 @@ class AngleOneAPI(BaseAPI):
         # return None
         
     def getStockPrice(self, session: Session, symbol: str):
-        stock = session.query(Instrument).filter(
-            Instrument.Name == symbol,
-            Instrument.ExchangeSegment == 'NSE'
+        stock = session.query(Stock).filter(
+            Stock.Symbol == symbol,
         ).first()
         if stock and stock.Token:
             exchangeToken = {
