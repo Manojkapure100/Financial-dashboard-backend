@@ -6,6 +6,9 @@ from sqlalchemy.orm import Session
 from app.core.logger import logger
 from app.core.dbModels import ApiUsageLimit
 from enum import Enum
+import time
+from functools import wraps
+from requests.exceptions import RequestException
 
 class BaseAPI:
     apiName: str = ''
@@ -74,3 +77,34 @@ def get_date_range(days: int) -> tuple:
 def format_currency(value: float, decimals: int = 2) -> str:
     """Format value as currency"""
     return f"₹{value:.{decimals}f}"
+
+def retry_on_failure(max_retries=3, initial_delay=2, backoff_factor=2):
+    """
+    Decorator to add retry logic to any function that may fail temporarily (like network requests).
+    - max_retries: Maximum number of retries before giving up.
+    - initial_delay: Initial delay in seconds before the first retry.
+    - backoff_factor: Multiplier to increase delay between retries (exponential backoff).
+    """
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            attempt = 0
+            while attempt < max_retries:
+                try:
+                    # Try to execute the function
+                    return func(*args, **kwargs)
+                except RequestException as e:
+                    attempt += 1
+                    logger.error(f"Error in function {func.__name__}: {e}. Attempt {attempt}/{max_retries}")
+                    
+                    if attempt < max_retries:
+                        # Exponential backoff (2^n where n is attempt-1)
+                        wait_time = initial_delay * (backoff_factor ** (attempt - 1))
+                        logger.info(f"Retrying in {wait_time} seconds...")
+                        time.sleep(wait_time)
+                    else:
+                        logger.error(f"Max retries reached for {func.__name__}. Failing after {max_retries} attempts.")
+                        raise Exception(f"Failed after {max_retries} retries: {e}")
+        return wrapper
+    return decorator
+

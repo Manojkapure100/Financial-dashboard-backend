@@ -4,9 +4,10 @@ from app.core.logger import logger
 from sqlalchemy.orm import Session
 from SmartApi.smartConnect import SmartConnect
 import pyotp
-from app.helpers.helpers import BaseAPI, externalAPI
+from app.helpers.helpers import BaseAPI, externalAPI, retry_on_failure
 from dotenv import load_dotenv
 import os
+from requests.exceptions import RequestException
 
 load_dotenv()
 
@@ -73,6 +74,7 @@ class AngleOneAPI(BaseAPI):
         # logger.info(dir(smart_Api))
         # return None
         
+    @retry_on_failure()
     def getStockPrice(self, session: Session, symbol: str):
         stock = session.query(Stock).filter(
             Stock.Symbol == symbol,
@@ -81,9 +83,12 @@ class AngleOneAPI(BaseAPI):
             exchangeToken = {
                 "NSE":[stock.Token]
             }
-            stockPrice = self.smart_Api.getMarketData('FULL', exchangeToken)
+            resp = self.smart_Api.getMarketData('FULL', exchangeToken)
+            if resp["errorcode"] == 'AB1004':
+                raise RequestException("failed with AB1004")
+            
             self.updateCurrentUsage(session)
-            return stockPrice
+            return resp
         else:
             raise Exception(f"Investment instrument {symbol} Not found")
         
