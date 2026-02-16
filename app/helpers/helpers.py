@@ -40,6 +40,24 @@ class externalAPI(Enum):
     MarketFeedAPI = 'MarketFeedAPI'
     NSEAPI = ''
     HistoricalAPI = ''
+    
+class MaxDaysForInterval(Enum):
+    ONE_MINUTE = 30
+    THREE_MINUTE = 60
+    FIVE_MINUTE = 100
+    TEN_MINUTE = 100
+    FIFTEEN_MINUTE = 200
+    THIRTY_MINUTE = 200
+    ONE_HOUR = 400
+    ONE_DAY = 2000
+
+    @classmethod
+    def list_intervals(cls):
+        return [e.name for e in cls]
+    
+    @classmethod
+    def list_intervals_with_values(cls):
+        return [{"name": e.name, "value": e.value} for e in cls]
 
 def send_response(
     *,

@@ -1,10 +1,12 @@
+from datetime import datetime
 import requests
-from app.core.dbModels import ApiUsageLimit, Instrument, Stock
+from app.core.dbModels import Instrument, Stock
 from app.core.logger import logger
 from sqlalchemy.orm import Session
 from SmartApi.smartConnect import SmartConnect
 import pyotp
-from app.helpers.helpers import BaseAPI, externalAPI, retry_on_failure
+from app.core.requestResponseModel import getStockPriceListRequest
+from app.helpers.helpers import BaseAPI, MaxDaysForInterval, externalAPI, retry_on_failure
 from dotenv import load_dotenv
 import os
 from requests.exceptions import RequestException
@@ -42,7 +44,6 @@ class AngleOneAPI(BaseAPI):
         for i in range(0, len(instrument_list), batch_size):
             batch_data = instrument_list[i:i+batch_size]
             
-            # Convert batch data to ORM objects
             instruments_to_add = [
                 Instrument(
                     Token=data['token'],
@@ -58,21 +59,8 @@ class AngleOneAPI(BaseAPI):
             logger.info(f'{i+batch_size} inserted') 
             session.expunge_all()
 
-        # Close the session after all insertions
         session.close()
         print("Batch insertion complete!")
-
-        # Example: Filtering for Nifty options
-        # nifty_options = [i for i in instrument_list if "NIFTY" in i['tradingsymbol']]
-
-        # global accessToken, smart_Api
-        # if accessToken in (None, ''):
-        #     self.getAccessToken(session)
-        # # instruments = smart_Api.get_instruments()
-        # # return instruments
-        # smart_Api.getMarketData('FULL')
-        # logger.info(dir(smart_Api))
-        # return None
         
     @retry_on_failure()
     def getStockPrice(self, session: Session, symbol: str):
@@ -92,3 +80,34 @@ class AngleOneAPI(BaseAPI):
         else:
             raise Exception(f"Investment instrument {symbol} Not found")
         
+    def getMaxDays(self, interval: str) -> int:
+        return MaxDaysForInterval[interval].value
+        
+    @retry_on_failure()
+    def getStockPriceList(self, session: Session, request: getStockPriceListRequest):
+        stock = session.query(Stock).filter(
+            Stock.Symbol == request.symbol
+        ).first()
+        if stock and stock.Token:
+            dateDiff = datetime.strptime(request.toDate, "%Y-%m-%d %H:%M") - datetime.strptime(request.fromDate, "%Y-%m-%d %H:%M")
+            maxDays = self.getMaxDays(request.interval)
+            if dateDiff.days > maxDays:
+                raise Exception(f"Invalid request for price list of stock {stock.FullName}")
+            
+            reqParams = {
+                "exchange": "NSE",
+                "symboltoken": str(stock.Token),
+                "interval": request.interval,
+                "fromdate":  request.fromDate,
+                "todate":  request.toDate
+            }
+            resp = self.smart_Api.getCandleData(reqParams)
+            if resp["errorcode"] == 'AB1004':
+                raise RequestException("failed with AB1004")
+            elif resp["errorcode"] not in ('',None,""):
+                raise Exception("Failed with exception")
+            
+            self.updateCurrentUsage(session)
+            return resp
+        else:
+            raise Exception(f"Investment instrument {request.symbol} Not found")
