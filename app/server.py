@@ -27,7 +27,6 @@ app.add_middleware(
 
 @app.middleware("http")
 async def log_origin(request, call_next):
-    print("Origin header:", request.headers.get("origin"))
     logger.info(f"Origin header: {request.headers.get("origin")}")
     response = await call_next(request)
     return response

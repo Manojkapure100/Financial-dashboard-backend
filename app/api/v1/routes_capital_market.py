@@ -9,6 +9,7 @@ from datetime import datetime
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.dbModels import Stock
+from app.helpers.helpers import send_response
 from app.helpers.nseApiHelper import NseApi
 from app.helpers.indiaApiHelper import IndiaApi
 from app.core.logger import logger
@@ -64,3 +65,51 @@ async def func(companySymbol: str, session: Session = Depends(get_db)):
         "status": "Success" if new_stock.Id else "Failed",
         "data": new_stock or []
     }
+
+@router.get("/company/{companySymbol}/description")
+async def func(companySymbol: str, session: Session = Depends(get_db)):
+    try:
+        indiaApiHelper = IndiaApi(session)
+        stock: Stock | None = (
+            session.query(Stock)
+            .filter(Stock.Symbol == companySymbol)
+            .first()
+        )
+        if not stock.Id:
+            return send_response(status_code=400, message=f"No Stock found with symbol {companySymbol}")
+        
+        response = None
+        if stock.Info:
+            response = indiaApiHelper.getCompanyDescription(stock)
+        else:
+            new_stock = indiaApiHelper.getStockInfo(session, stock)
+            response = indiaApiHelper.getCompanyDescription(new_stock)
+            
+        return send_response(status_code=200, body=response)
+    except Exception as ex:
+        logger.error(str(ex))
+        return send_response(status_code=500, message=str(ex))
+
+@router.get("/company/{companySymbol}/financialRatio")
+async def func(companySymbol: str, session: Session = Depends(get_db)):
+    try:
+        indiaApiHelper = IndiaApi(session)
+        stock: Stock | None = (
+            session.query(Stock)
+            .filter(Stock.Symbol == companySymbol)
+            .first()
+        )
+        if not stock.Id:
+            return send_response(status_code=400, message=f"No Stock found with symbol {companySymbol}")
+        
+        response = None
+        if stock.Info:
+            response = indiaApiHelper.getStockFinancialRatio(stock)
+        else:
+            new_stock = indiaApiHelper.getStockInfo(session, stock)
+            response = indiaApiHelper.getStockFinancialRatio(new_stock)
+            
+        return send_response(status_code=200, body=response)
+    except Exception as ex:
+        logger.error(str(ex))
+        return send_response(status_code=500, message=str(ex))
