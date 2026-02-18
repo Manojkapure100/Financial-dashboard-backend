@@ -101,11 +101,11 @@ class AngleOneAPI(BaseAPI):
                 "fromdate":  request.fromDate,
                 "todate":  request.toDate
             }
-            resp = self.smart_Api.getCandleData(reqParams)
+            resp: list = self.smart_Api.getCandleData(reqParams)
             if resp["errorcode"] == 'AB1004':
                 raise RequestException("failed with AB1004")
             elif resp["errorcode"] not in ('',None,""):
-                raise Exception("Failed with exception")
+                raise Exception(f"Failed with exception {resp}")
             
             self.updateCurrentUsage(session)
             return resp
