@@ -60,7 +60,7 @@ class AngleOneAPI(BaseAPI):
             session.expunge_all()
 
         session.close()
-        print("Batch insertion complete!")
+        logger.info("Batch insertion complete!")
         
     @retry_on_failure()
     def getStockPrice(self, session: Session, symbol: str):
@@ -101,10 +101,10 @@ class AngleOneAPI(BaseAPI):
                 "fromdate":  request.fromDate,
                 "todate":  request.toDate
             }
-            resp: list = self.smart_Api.getCandleData(reqParams)
-            if resp["errorcode"] == 'AB1004':
+            resp: dict = self.smart_Api.getCandleData(reqParams)
+            if resp.get("errorcode") == 'AB1004':
                 raise RequestException("failed with AB1004")
-            elif resp["errorcode"] not in ('',None,""):
+            elif resp.get("errorcode") not in (None,"") or resp.get("status") == False:
                 raise Exception(f"Failed with exception {resp}")
             
             self.updateCurrentUsage(session)

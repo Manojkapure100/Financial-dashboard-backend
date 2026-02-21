@@ -40,6 +40,7 @@ class externalAPI(Enum):
     MarketFeedAPI = 'MarketFeedAPI'
     NSEAPI = ''
     HistoricalAPI = ''
+    FinancialModelingPrepAPI = 'FinancialModelingPrepAPI'
     
 class MaxDaysForInterval(Enum):
     ONE_MINUTE = 30
