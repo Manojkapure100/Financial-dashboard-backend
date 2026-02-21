@@ -1,16 +1,13 @@
-"""
-Main application entry point
-"""
-
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from sqlalchemy import text
-from app.api.v1 import routes_market, routes_capital_market
+from app.api.v1 import routes_capital_market
 from fastapi import Depends
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.dbModels import Stock
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.logger import logger
+from app.helpers.helpers import send_response
 
 app = FastAPI(title="Financial Dashboard Backend")
 
@@ -32,22 +29,18 @@ async def log_origin(request, call_next):
     return response
 
 # Include routers
-app.include_router(routes_market.router)
 app.include_router(routes_capital_market.router)
-
 
 @app.get("/")
 async def root(session: Session = Depends(get_db)):
     try:
         result = session.execute(text('select 1'))
         working = result.fetchone()[0]
-        return {"message": f"Welcome to Financial Dashboard API, database {'not ' if not working else ''}working"}
+        message = f"Welcome to Financial Dashboard API, database {'not ' if not working else ''}working"
+        return send_response(status_code=200, body=message)
     except Exception as ex:
-        return {"message": f"Welcome to Financial Dashboard API, database not working"}
-
-@app.get("/test")
-async def test(session: Session = Depends(get_db)):
-    return session.query(Stock).all()
+        message = f"Welcome to Financial Dashboard API, database not working"
+        return send_response(status_code=500, body=message)
 
 if __name__ == "__main__":
     import uvicorn
